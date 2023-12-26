@@ -186,7 +186,7 @@
   <p align="center">
     <img
       width="625em"
-      src="https://github.com/huzaifa215/huzaifa215/blob/main/github-metrics.svg"
+      src="https://github.com/julmtoz/julmtoz/blob/main/github-metrics.svg"
     />
   </p>
 
