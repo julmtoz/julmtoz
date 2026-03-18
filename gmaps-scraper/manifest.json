@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "LeadScraper Pro – Google Maps",
+  "version": "1.0.0",
+  "description": "Extract 80+ data fields from Google Maps listings including emails, social links, GMB data, hours, and more.",
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting",
+    "activeTab",
+    "alarms"
+  ],
+  "host_permissions": [
+    "*://*.google.com/*",
+    "*://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "LeadScraper Pro"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.google.com/maps/*"],
+      "js": ["content/gmaps-scraper.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["dashboard/*", "lib/*", "icons/*", "content/website-scraper.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
