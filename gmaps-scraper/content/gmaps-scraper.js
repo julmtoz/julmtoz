@@ -59,17 +59,27 @@
   }
 
   function parseCIDFromUrl(url) {
+    // From ?cid= query param
     const m = url.match(/[?&]cid=(\d+)/);
     if (m) return m[1];
-    // From data parameter: 8m2!3d...4d... sometimes contains cid in 1i
-    const m2 = url.match(/!1i(\d{10,})/);
-    if (m2) return m2[1];
+    // From data parameter: !1s0xHEX:0xHEX → convert second hex to decimal CID
+    const hexMatch = url.match(/!1s(0x[0-9a-fA-F]+:0x[0-9a-fA-F]+)/);
+    if (hexMatch) {
+      try {
+        const parts = hexMatch[1].split(':');
+        if (parts[1]) return BigInt(parts[1]).toString(10);
+      } catch {}
+    }
     return '';
   }
 
   function parseKGMIDFromUrl(url) {
-    const m = url.match(/\/g\/([a-zA-Z0-9_-]+)/);
-    return m ? `/g/${m[1]}` : '';
+    // !16s%2Fg%2F[alphanumeric] in data segment
+    const m = url.match(/!16s(%2Fg%2F[^!&]+)/);
+    if (m) return decodeURIComponent(m[1]); // returns "/g/1tf_zfkh"
+    // fallback: /g/ in pathname
+    const m2 = url.match(/\/g\/([a-zA-Z0-9_-]+)/);
+    return m2 ? `/g/${m2[1]}` : '';
   }
 
   function buildGMBUrl(name, placeId) {
@@ -78,17 +88,18 @@
   }
 
   function buildPhotosUrl(placeId, name) {
-    const q = encodeURIComponent(name || '');
-    if (placeId) return `https://www.google.com/maps/place/?q=place_id:${placeId}&tab=photos`;
+    if (placeId) return `https://www.google.com/maps/place/?q=place_id:${placeId}&source=photos`;
     return '';
   }
 
   function buildReviewUrl(placeId) {
+    // placeId here is the CID decimal (for search.google.com reviews)
     if (placeId) return `https://search.google.com/local/reviews?placeid=${placeId}`;
     return '';
   }
 
-  function buildGoogleKnowledgeUrl(cid) {
+  function buildGoogleKnowledgeUrl(kgmid, cid) {
+    if (kgmid) return `https://www.google.com/search?kgmid=${encodeURIComponent(kgmid)}`;
     if (cid) return `https://www.google.com/search?q=&ludocid=${cid}`;
     return '';
   }
@@ -157,7 +168,7 @@
   }
 
   // ---- Extract from detail panel ----------------------------
-  function extractDetailPanel() {
+  async function extractDetailPanel() {
     const panel = document.querySelector('[role="main"]');
     if (!panel) return null;
 
@@ -225,8 +236,8 @@
       panel.querySelector('a[href*="business.google.com"]');
     const claimed = !claimEl; // if no "claim" button, it's claimed
 
-    // Hours
-    const hours = extractHours(panel);
+    // Hours (async - may need to click expand button)
+    const hours = await extractHours(panel);
 
     // Menu
     const menuEl = panel.querySelector('a[href*="menu"]') ||
@@ -289,7 +300,7 @@
       menuLink,
       gmbUrl: buildGMBUrl(name, placeId),
       cid,
-      googleKnowledgeUrl: buildGoogleKnowledgeUrl(cid),
+      googleKnowledgeUrl: buildGoogleKnowledgeUrl(kgmid, cid),
       kgmid,
       photosPageUrl: buildPhotosUrl(placeId, name),
       favicon: faviconUrl,
@@ -319,7 +330,7 @@
     return lead;
   }
 
-  function extractHours(panel) {
+  async function extractHours(panel) {
     const result = {
       hours: '',
       monday: '',
@@ -331,13 +342,32 @@
       sunday: ''
     };
 
-    // Try to find hours section
-    const hoursBtn = panel.querySelector('[data-item-id*="oh"] button') ||
+    // Try to click the hours toggle to expand it
+    const hoursToggle = panel.querySelector('button[data-item-id="oh"]') ||
       panel.querySelector('[jsaction*="openhours"]') ||
-      panel.querySelector('[aria-label*="hour" i]');
+      panel.querySelector('[aria-label*="Sunday" i]')?.closest('button') ||
+      panel.querySelector('[aria-label*="hour" i] button');
 
-    // Check if hours table is already expanded
+    if (hoursToggle) {
+      try {
+        hoursToggle.click();
+        // Wait for hours table to appear via MutationObserver
+        await new Promise(resolve => {
+          const obs = new MutationObserver(() => {
+            if (panel.querySelector('table.WgFkxc, table[class*="hours"]')) {
+              obs.disconnect();
+              resolve();
+            }
+          });
+          obs.observe(panel, { childList: true, subtree: true });
+          setTimeout(() => { obs.disconnect(); resolve(); }, 1500);
+        });
+      } catch {}
+    }
+
+    // Parse hours table
     const hoursTable = panel.querySelector('table.WgFkxc') ||
+      panel.querySelector('table[class*="hour"]') ||
       panel.querySelector('[data-hide-tooltip-on-mouse-out] table') ||
       panel.querySelector('div.t39EBf table');
 
@@ -348,19 +378,21 @@
         if (cells.length >= 2) {
           const day = cells[0].textContent.trim().toLowerCase();
           const time = cells[1].textContent.trim();
-          if (day.includes('monday') || day.includes('mon')) result.monday = time;
-          else if (day.includes('tuesday') || day.includes('tue')) result.tuesday = time;
-          else if (day.includes('wednesday') || day.includes('wed')) result.wednesday = time;
-          else if (day.includes('thursday') || day.includes('thu')) result.thursday = time;
-          else if (day.includes('friday') || day.includes('fri')) result.friday = time;
-          else if (day.includes('saturday') || day.includes('sat')) result.saturday = time;
-          else if (day.includes('sunday') || day.includes('sun')) result.sunday = time;
+          if (day.includes('monday') || day === 'mon') result.monday = time;
+          else if (day.includes('tuesday') || day === 'tue') result.tuesday = time;
+          else if (day.includes('wednesday') || day === 'wed') result.wednesday = time;
+          else if (day.includes('thursday') || day === 'thu') result.thursday = time;
+          else if (day.includes('friday') || day === 'fri') result.friday = time;
+          else if (day.includes('saturday') || day === 'sat') result.saturday = time;
+          else if (day.includes('sunday') || day === 'sun') result.sunday = time;
         }
       });
     }
 
-    // Summary hours
-    const hoursText = panel.querySelector('.t39EBf') || panel.querySelector('[jsaction*="openhours"] .fontBodyMedium');
+    // Summary hours (e.g. "Open ⋅ Closes 9 PM")
+    const hoursText = panel.querySelector('.t39EBf') ||
+      panel.querySelector('[jsaction*="openhours"] .fontBodyMedium') ||
+      panel.querySelector('[data-item-id="oh"] .fontBodyMedium');
     if (hoursText) result.hours = hoursText.textContent.trim();
 
     return result;
@@ -483,7 +515,7 @@
       const el = listings[i];
       try {
         await clickListing(el);
-        const lead = extractDetailPanel();
+        const lead = await extractDetailPanel();
 
         if (lead && lead.name) {
           businesses.push(lead);
