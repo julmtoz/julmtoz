@@ -1,39 +1,65 @@
-<div align="center">
-  <h1>Hi, I'm Julio Matos 👋</h1>
-  <p>Full-Stack Developer in transition — building production-grade apps while running IT infrastructure for 200+ users.</p>
-</div>
+# Julio Matos
 
----
+IT operations professional and full-stack developer building production systems
+with a systems-first mindset. I manage infrastructure for more than 200 users
+and bring the same focus on reliability, security, observability, and clear
+operations to the software I ship.
 
-## About Me
+[LinkedIn](https://www.linkedin.com/in/julio-matos-nunez/) ·
+[Live SignalDesk demo](https://ai-incident-intelligence-production-df73.up.railway.app)
 
-I'm an IT professional moving into software engineering with a systems-first mindset. I currently manage the full technology stack — networking, identity, endpoint management, and infrastructure — for a 200+ user organization, and I bring that same operational discipline to the code I write: real auth, real data persistence, real deployments, not just tutorials.
+## Featured projects
 
-- Currently working in IT infrastructure (Google Workspace, Microsoft 365, networking, endpoint management)
-- Building full-stack applications with React, TypeScript, Node.js, and PostgreSQL
-- Background in digital marketing automation and systems integration (SEO, workflow automation, API integrations)
-- Pursuing CompTIA Network+ and cloud certifications (Azure) alongside software development
-- Focused on shipping complete, deployed projects, not just code samples
+### [SignalDesk — AI Incident Intelligence](https://github.com/julmtoz/ai-incident-intelligence)
 
----
+Production incident-analysis platform that combines a same-origin React and
+Express application with PostgreSQL, Redis, BullMQ, OpenAI structured analysis,
+and relevant GitHub issue context.
 
-## Featured Projects
+- Durable background processing with retries and restart recovery
+- Dependency-aware health checks, Prisma migrations, and graceful shutdown
+- Multi-stage Docker build, GitHub Actions CI, and Railway deployment
+- [Live application](https://ai-incident-intelligence-production-df73.up.railway.app)
 
-**[Resolve — Service Management Platform](https://github.com/julmtoz/service-management-platform)**
-Full-stack service desk with JWT auth, role-based access control, ticket workflow, and immutable audit history. PostgreSQL + Prisma, tested, containerized, deployed with CI/CD.
-[Live demo](https://service-management-platform.onrender.com)
+### [Resolve — Service Management Platform](https://github.com/julmtoz/service-management-platform)
 
-**IT Operations Platform**
-React/TypeScript operations dashboard built from real infrastructure-management needs.
+Full-stack service desk with JWT authentication, API-enforced role-based access
+control, ticket workflows, immutable audit history, PostgreSQL persistence, and
+containerized deployment.
 
----
+- React, TypeScript, Express, Prisma, PostgreSQL, Docker
+- Automated tests and GitHub Actions CI
+- [Live application](https://service-management-platform.onrender.com)
 
-## Tech Stack
+### [IT Operations Platform](https://github.com/julmtoz/it-ops-platform)
 
-`React` `TypeScript` `Node.js` `Express` `PostgreSQL` `Prisma` `Docker` `JWT`
+Responsive operations dashboard shaped by real infrastructure-management needs,
+covering service tickets, device inventory, user groups, and operational
+reporting.
 
----
+- React, TypeScript, Vite, and accessible responsive UI
+- Ticket workflows, inventory views, filtering, reporting, and local persistence
 
-## Currently Learning
+## In development
 
-Cloud infrastructure (Azure), microservices architecture, and deepening backend/database design skills.
+### [Aether OS — Career Engine AI](https://github.com/julmtoz/career-engine-ai)
+
+An event-driven, approval-gated career workflow system exploring durable agent
+orchestration, explainable AI decisions, job discovery, and human-in-the-loop
+outreach. It is an active beta rather than one of the three completed portfolio
+projects.
+
+## Technical focus
+
+`React` `TypeScript` `Node.js` `Express` `PostgreSQL` `Prisma` `Redis`
+`BullMQ` `Docker` `GitHub Actions` `OpenAI API` `REST APIs`
+
+## Operations background
+
+- Google Workspace and Microsoft 365 administration
+- Networking, identity, endpoint management, and user support
+- Production deployment, troubleshooting, documentation, and recovery planning
+- Marketing automation, SEO, workflow automation, and API integrations
+
+Currently deepening cloud infrastructure and backend system-design skills while
+building complete, deployed projects rather than tutorial demonstrations.
